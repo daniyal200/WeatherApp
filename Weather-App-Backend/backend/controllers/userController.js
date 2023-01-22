@@ -1,5 +1,7 @@
 const bcrypt = require('bcryptjs')
 const User = require('../models/userModel')
+const Weather = require('../models/weatherModel');
+
 const asyncHandler = require('express-async-handler')
 const registerUser = asyncHandler(async (req, res) => {
     const { name, username, password } = req.body
@@ -23,6 +25,26 @@ const registerUser = asyncHandler(async (req, res) => {
         username,
         password: hashedPassword,
     })
+
+    const registeredUser = await User.findOne({username: username});
+
+    if (registeredUser) {
+        console.log("USER >>>> ", registeredUser);
+        const defaultCities = ["Karachi", "Lahore", "Islamabad", "Peshawar", "Quetta"];
+        const weathers = await Weather.find({ city: { $in: defaultCities } });
+
+        console.log("Weather >>>>> ", weathers);
+
+        if (weathers.length > 0) {
+            const userObject = {
+                cities: weathers
+            }
+              await User.updateOne({ username: username }, userObject);
+        }
+    } else {
+        res.json({msg: "Registration Failed"});
+    }
+
     if (user) {
         res.status(201).json({
             _id: user.id,
@@ -35,6 +57,19 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 })
 
+const getUser =async(req,res) =>{
+    console.log("BODY >>> ", req.body);
+    const userdata = await User.findOne({username:req.body.username})
+    if(userdata)
+    {
+        res.json(userdata)
+    } else{
+        res.status(400)
+        .json({message:'NO DATA REC.'})
+    }
+
+}
+
 const loginUser = asyncHandler(async (req, res) => {
     const { username, password } = req.body
 
@@ -42,12 +77,16 @@ const loginUser = asyncHandler(async (req, res) => {
     const user = await User.findOne({ username })
 
     if (user && (await bcrypt.compare(password, user.password))) {
-        res.json({
-            _id: user.id,
-            name: user.name,
-            username: user.username,
-            message:'logged In'
-        })
+        req.session.user = user;
+        req.session.save((err) => {
+            if (err) throw err;
+
+            req.user = user;
+            console.log("SESSION >>> ", req.user);
+            res.json({
+                user: user
+            })
+        });
     } else {
         res.status(400)
         throw new Error('Invalid credentials')
@@ -55,5 +94,5 @@ const loginUser = asyncHandler(async (req, res) => {
 })
 
 
-module.exports = { registerUser, loginUser };
+module.exports = { registerUser, loginUser ,getUser};
 

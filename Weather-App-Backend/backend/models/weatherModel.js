@@ -2,11 +2,11 @@ const mongoose = require('mongoose')
 
 const weatherSchema = mongoose.Schema(
   {
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-      ref: 'User',
-    },
+    // user: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   required: true,
+    //   ref: 'User',
+    // },
     city: {
       type: String,
       required: true
@@ -26,6 +26,11 @@ const weatherSchema = mongoose.Schema(
     date: {
       type: Date,
       required: true
+    },
+    defaultCity: {
+      type: Boolean,
+      required: false,
+      default: false
     }
   },
   {

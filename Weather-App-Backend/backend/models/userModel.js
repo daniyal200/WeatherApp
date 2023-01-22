@@ -15,10 +15,15 @@ const userSchema = mongoose.Schema(
       type: String,
       required: [true, 'Please add a password'],
     },
+    cities: {
+      type: Array,
+      required: true
+    }
   },
   {
     timestamps: true,
-  }
+  },
+  
 )
 
 module.exports = mongoose.model('User', userSchema)

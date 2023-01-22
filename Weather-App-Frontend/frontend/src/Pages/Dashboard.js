@@ -19,7 +19,7 @@ const useStyles = makeStyles({
         marginTop:'2%'
     }
 });
-const Dashboard = () => {
+const Dashboard = ({ user, setUser }) => {
     const [weatherData, setWeatherData] = useState([]);
     const [city, setCity] = useState();
     const navigate = useNavigate();
@@ -27,28 +27,28 @@ const Dashboard = () => {
     const paperStyle = { padding: 20, height: '80vh', width: '77%', margin: '20px auto' }
     const gridStyle = { padding: 70 }
     const getAllWeathers = async () => {
-        await axios.get('http://localhost:8000/api/weather/getAllWeathers')
-            .then(response => {
-                setWeatherData(response.data);
-                console.log(response.data)
-            })
-            .catch(error => {
-                console.log(error);
-            })
+        console.log(" USER ", user);
+        let response = await axios.post('http://localhost:8000/api/user/getUser',{username:user.username})
+        if (response && response?.data) {
+            console.log("ADD CITY... ");
+            console.log(response.data);
+            setUser(response.data);
+        }
     }
     const OnLogout=()=>{
         navigate("/");
     }
     const addCity = async () => {
-        await axios.post('http://localhost:8000/api/weather/addWeather', {
-            cityName:city
+        let response = await axios.post('http://localhost:8000/api/weather/addWeather', {
+            cityName:city,
+            username: user.username
         });
         getAllWeathers();
         console.log('city>>>', city)
     }
     useEffect(() => {
-        getAllWeathers()
-    }, []);
+        console.log("USER >>> ", user);
+    }, [user]);
     return (
         
         <div>
@@ -74,9 +74,9 @@ const Dashboard = () => {
                     </Grid>
                     <Grid className={classes.root} container spacing={3}>
                         {
-                            weatherData ?
+                            (user && user?.cities && user?.cities?.length > 0) ?
 
-                                weatherData.map((item, key) => (
+                                user?.cities.map((item, key) => (
                                     <Grid item xs={4} spacing={2}>
                                         <Card style={{ backgroundColor: '#b9b1b1' }}>
                                             <CardContent style={{}}>

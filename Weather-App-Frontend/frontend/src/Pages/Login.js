@@ -24,7 +24,8 @@ const Login = ({ user, setUser }) => {
         password,
       });
       if (response.status === 200) {
-        // Save the user token in local storage
+        console.log(response);
+        setUser(response.data.user)
         navigate('/dashboard')
       } else {
           console.log(response.Error)
